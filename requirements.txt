@@ -1,0 +1,6 @@
+opencv-contrib-python==4.4.0.46
+numpy==1.19.2
+easygui==0.98.2
+seaborn==0.11.1
+tqdm==4.62.3
+pathlib==1.0.1
