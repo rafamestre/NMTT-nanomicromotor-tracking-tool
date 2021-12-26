@@ -7,7 +7,26 @@
 
 ### Installing dependencies
 
+It is recommended to use Anaconda and a specific enviorenment to run this code, to avoid clashes between packages versions. It's recommended to use Python 3.6 or higher.
+
+Open your Anaconda prompt and write:
+
+```
+conda create --name NMTT python=3.6
+```
+
+
+Once the environment has been created, activate it by:
+
+```
+conda activate NMTT
+```
+
+Then install the dependencies by writing (Note: it is assumed the requirements.txt file is in the home directory, otherwise you should write "[pathtofile]/requirements.txt"
+
+```
 pip install -r requirements.txt
+```
 
 ### Instructions to run
 
