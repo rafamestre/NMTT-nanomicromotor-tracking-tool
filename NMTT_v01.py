@@ -626,6 +626,10 @@ def main():
     Saves the info and calculates MSD.
     '''
     
+    #Summary of the results
+    ff = open(Path(currentDir, file+'_trackingResults.csv'), 'w',newline="")
+    writer = csv.writer(ff)
+
     #For each tracked particle
     for p in ids:  
         
@@ -713,24 +717,23 @@ def main():
         
         
         #Calculates the MSD
-        msd_time, MSD = MSD_fft(xvector=centerx_norm,yvector=centery_norm,dt=1/fps)
+        # msd_time, MSD = MSD_fft(xvector=centerx_norm,yvector=centery_norm,dt=1/fps)
         
         # plt.plot(MSD[:int(len(MSD)/10)],timeList[:int(len(MSD)/10)])
         
         #Writes the MSD
-        with open(Path(currentDir, file+'_tracking_p'+str(p)+'.csv'), 'w') as ff:
-            # ff.write('Particle,'+str(p))
-            writer = csv.writer(ff)
-            writer.writerow(['Particle',str(p)])
-            writer.writerow(['Time (seconds)',*timeList[:len(centerx_norm)]])
-            writer.writerow(['X (microm)',*centerx_norm])
-            writer.writerow(['Y (microm)',*centery_norm])
-            writer.writerow(['MSD (microm**2)',*MSD[1:]])
-            writer.writerow(['Time displacement (seconds)',*timeList[1:len(centerx_norm)]])
+    
+            
+        writer.writerow(['Particle',str(p)])
+        writer.writerow(['Time (seconds)',*timeList[:len(centerx_norm)]])
+        writer.writerow(['X (microm)',*centerx_norm])
+        writer.writerow(['Y (microm)',*centery_norm])
+        writer.writerow(['\n'])
+
             # for i in range(len(center)):
             #     ff.write("%.3f\t%.6f\n" % (timeList[i],center[i]))
     
-        
+    ff.close()    
         
 
 if __name__ == '__main__':
