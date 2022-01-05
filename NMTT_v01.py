@@ -4,11 +4,10 @@ NMAT: Nano-micromotor Analysis Tool
 
 v0.1
 
-26/12/2021
+04/01/2022
     
 TO DO:
     
-    -) Make the part of a lost particle more robust.
     -) Eliminate MSD calculation (or not?) when NMAT is updated.
 
 @author: Rafael Mestre; r.mestre@soton.ac.uk;
@@ -60,7 +59,7 @@ displayVideo = True
 generalOffset = 0 #This is to apply a general offset to the information on the top left, to be moved down
 
 
-#The jumpt threshold specified how much is the particle moved from one frame to 
+#The jump threshold specified how much is the particle moved from one frame to 
 #the other, to consider that the tracker has lost it and it has found a different
 #particle. During tracking, the average dimension of the bounding box (the mean
 #value of its width and height) is multiplied by the jump threshold.
@@ -69,6 +68,18 @@ generalOffset = 0 #This is to apply a general offset to the information on the t
 #Recommended value is 0.5, but can be larger if the particles generally move
 #very fast, or smaller if they are moving slowly.
 jumpThreshold = 0.5 
+
+
+#The number of seconds stopped specifies how much time must have passed
+#with the tracker in the same position to consider that the particle has been
+#lost and the tracker is stuck without moving. This threshold in seconds
+#will be converted into consecutive frames. At least 5 frames are needed to
+#compute reliably if the tracker is stuck, so if the number of seconds doesn't
+#reach 5 frames, this number will be forced. If the threshold is too short,
+#the particles will be lost too often. If it's too long, much of the trajectory
+#will be stuck, giving unreliable results. The calculation is done as soon 
+#as the video is read and the FPS are known.
+secondsStopped = 0.7
 
 
 # Set up tracker.
@@ -181,6 +192,7 @@ def main():
     # global generalOffset
     # global jumpThreshold
     
+    global bbox_aux
     
     # Generate a MultiTracker object    
     multi_tracker = cv2.MultiTracker_create()
@@ -209,6 +221,10 @@ def main():
     fps = round(video.get(cv2.CAP_PROP_FPS))
     seconds = length/fps
     
+    
+    #Conversion of secondsStopped to framesStopped
+    framesStopped = round(secondsStopped*fps)
+    if framesStopped < 5: framesStopped = 5
     
     #Create the current and save directories, and file names
     currentDir = fileName.parents[0]
@@ -342,6 +358,15 @@ def main():
             bbox_aux.remove((0,0,0,0))
         except:
             break
+    
+    #This part removes instances of boxes without height and width,
+    #also made by mistake
+    to_remove = list()
+    for i in range(len(bbox_aux)):
+        if bbox_aux[i][2] <= 1 or bbox_aux[i][3] <= 1:
+            to_remove += [bbox_aux[i]]
+    for r in to_remove:
+        bbox_aux.remove(r)
         
     #Bounding boxes are added to the list, after being resized with the f scaling factor
     bounding_box_list.append(list([np.asarray([int(z/f) for z in bbox]) for bbox in bbox_aux]))
@@ -432,7 +457,7 @@ def main():
             missing_ids = list(set(ID_array[-1]).symmetric_difference(set(ID_array[-2])))
             print('Tracker lost')
             # print(keepDict)
-            [errorLog.append('Object {} lost at time {} s.'.format(p, timeList[-1])) for p in missing_ids]
+            [errorLog.append('Object {} lost at time {} s.'.format(p, timeList[-2])) for p in missing_ids]
     
     
         #Calculate the central position of the bounding boxes/particle
@@ -448,19 +473,23 @@ def main():
                 #Otherwise, the center is calculated according to the boundinb box dimensions
                 bbox = bboxes[index-1]
                 centers.append((int(bbox[0] + bbox[2]/2.),int(bbox[1] + bbox[3]/2.)))
-                if len(centerList) > 10:
+                if len(centerList) > framesStopped:
                     #If the following happens, we consider it hasn't moved,
                     #meaning it has lost the object
                     #This is just a very simple way of considering the center of the particle
                     #has barely changed in 10 frames, which means the particle has been lost
                     #and the tracker is not following anything.
-                    #TODO: do this better
-                    if centerList[-1][index-1] == centerList[-10][index-1]:
-                        if centerList[-3][index-1] == centerList[-5][index-1]:
-                            #If the particle has disappeared, we set its index in the
-                            #keepDict as False.
-                            keepDict[index] = False
-                            continue
+                    awayFromCenter = sum([np.linalg.norm(np.array(c[index-1])-np.array(centerList[-1][index-1])) for c in centerList[-framesStopped:-1]])
+                    if awayFromCenter <= framesStopped:
+                        #If the particle has disappeared, we set its index in the
+                        #keepDict as False.
+                        keepDict[index] = False
+                        print('Object was lost')
+                        errorLog.append('Object {} was lost for {} seconds and tracker stopped at time {} s.'.format(index,
+                                                                                                                     round(framesStopped/fps,2),
+                                                                                                                     timeList[-1]))
+
+                        continue
                 #if the center of the tracked object has moved too much
                 #(a distance specified by the jump threshold)
                 #we consider it has moved to another particle and it stops
