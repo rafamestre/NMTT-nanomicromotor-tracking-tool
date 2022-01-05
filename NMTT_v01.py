@@ -4,12 +4,8 @@ NMAT: Nano-micromotor Analysis Tool
 
 v0.1
 
-04/01/2022
+05/01/2022
     
-TO DO:
-    
-    -) Eliminate MSD calculation (or not?) when NMAT is updated.
-
 @author: Rafael Mestre; r.mestre@soton.ac.uk;
 
 This code was written to be compatible Python 3.6+, as well
@@ -716,22 +712,13 @@ def main():
         
         
         
-        #Calculates the MSD
-        # msd_time, MSD = MSD_fft(xvector=centerx_norm,yvector=centery_norm,dt=1/fps)
-        
-        # plt.plot(MSD[:int(len(MSD)/10)],timeList[:int(len(MSD)/10)])
-        
-        #Writes the MSD
-    
-            
+        #Writes summary file
         writer.writerow(['Particle',str(p)])
         writer.writerow(['Time (seconds)',*timeList[:len(centerx_norm)]])
         writer.writerow(['X (microm)',*centerx_norm])
         writer.writerow(['Y (microm)',*centery_norm])
         writer.writerow(['\n'])
 
-            # for i in range(len(center)):
-            #     ff.write("%.3f\t%.6f\n" % (timeList[i],center[i]))
     
     ff.close()    
         
