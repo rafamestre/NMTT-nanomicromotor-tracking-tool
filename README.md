@@ -129,3 +129,6 @@ Variable name             |  Explanation    | Default value
 :-------------------------:|:-------------------------: | :--------:
 SCALE | Conversion of image pixels to micrometers in units of pixels/micrometer. The default value, 9.6 is the setting from a specific microscope, and means that each micrometer of the image is formed by 9.6 pixels. If it's not specified correctly, the results returned in micrometers will be completely wrong (however, they are also returned in pixel units) | 9.6
 
+### Analysis of the results
+
+I recommend to use my Nano- micromotor analysis tool ([NMAT](https://github.com/rafamestre/NMAT-nanomicromotor-analysis-tool)), which accepts the motion results produced by NMTT and produces a whole analysis of motion with MSD, MSAD, trajectory plotting, autocorrelation velocity, and performs different types of fittings and motion parameter extraction, including averages between particles of the same conditions.
