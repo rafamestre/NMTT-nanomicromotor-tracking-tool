@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-NMAT: Nano-micromotor Analysis Tool
+NMTT: Nano-micromotor Tracking Tool
 
-v0.1
+v1
 
-05/01/2022
+07/01/2022
     
 @author: Rafael Mestre; r.mestre@soton.ac.uk;
 
@@ -43,27 +43,28 @@ f = 1 #Scaling factor of the video
 
 #Display options:
     #select the ones you want depending on what you want shown in the video
-displayFPS = True
-displayTime = True
-displayTracker = False
-displayBox = True
-displayTracking = True
-displayScaleBar = True
-displayScaleBarText = True
-displayParticleNumber = True
-displayVideo = True
-generalOffset = 0 #This is to apply a general offset to the information on the top left, to be moved down
+DISPLAY_FPS = True
+DISPLAY_TIME = True
+DISPLAY_TRACKER = False
+DISPLAY_BOX = True
+DISPLAY_TRACKING = True
+DISPLAY_SCALE_BAR = True
+DISPLAY_SCALE_BAR_TEXT = True
+DISPLAY_PARTICLE_NUMBER = True
+DISPLAY_VIDEO = True
+GENERAL_OFFSET = 0 #This is to apply a general offset to the information on the top left, to be moved down
+SCALE_NUMBER = 10 #scale number to be shown in um
 
 
-#The jump threshold specified how much is the particle moved from one frame to 
-#the other, to consider that the tracker has lost it and it has found a different
+#The jump threshold specifies how much the particle must move from one frame to 
+#another, to consider that the tracker has lost it and it has found a different
 #particle. During tracking, the average dimension of the bounding box (the mean
 #value of its width and height) is multiplied by the jump threshold.
 #If it's set to 0.5, the center of the bounding box must have moved more than
 #half its size, to consider that we've lost it.
 #Recommended value is 0.5, but can be larger if the particles generally move
 #very fast, or smaller if they are moving slowly.
-jumpThreshold = 0.5 
+JUMP_THRESHOLD = 0.5 
 
 
 #The number of seconds stopped specifies how much time must have passed
@@ -75,21 +76,19 @@ jumpThreshold = 0.5
 #the particles will be lost too often. If it's too long, much of the trajectory
 #will be stuck, giving unreliable results. The calculation is done as soon 
 #as the video is read and the FPS are known.
-secondsStopped = 0.7
+SECONDS_STOPPED = 0.7
 
 
 # Set up tracker.
-tracker_types = ['BOOSTING', 'MIL','KCF', 'TLD', 'MEDIANFLOW', 'GOTURN', 'MOSSE', 'CSRT']
-tracker_type = tracker_types[7] #Best performing one is CSRT
+TRACKER_TYPES = ['BOOSTING', 'MIL','KCF', 'TLD', 'MEDIANFLOW', 'GOTURN', 'MOSSE', 'CSRT']
+TRACKER_TYPE = TRACKER_TYPES[7] #Best performing one is CSRT
 
 ####IMPORTANT:
-####The "scale" settings below are from a specifici microscope
+####The "scale" settings below are from a specific microscope
 ####with a specific magnification. The scale in pixel/micron should
-####be changed for each microscope. The scaleNumber variable is the scale bar
-####maginute that will appear in the video
+####be changed for each microscope. 
 
-scaleNumber = 10 #scale number to be shown in um
-scale = 9.6 #in pixel/micron
+SCALE = 9.6 #in pixel/micron
 
 
 def on_trackbar(dummy):
@@ -112,7 +111,7 @@ def autocorrFFT(x):
 
 
 def MSD_fft(xvector,yvector,dt=1):
-    r'''Performs the MSD very efficiently using FFT. The result is time averaged.    
+    '''Performs the MSD very efficiently using FFT. The result is time averaged.    
     The discrete MSD is separated in S1 and 2*S2.
     Based on https://www.neutron-sciences.org/articles/sfn/abs/2011/01/sfn201112010/sfn201112010.html
     Code adapted from https://stackoverflow.com/questions/34222272/computing-mean-square-displacement-using-python-and-fft
@@ -134,12 +133,8 @@ def MSD_fft(xvector,yvector,dt=1):
         Q=Q-D[m-1]-D[N-m]
         S1[m]=Q/(N-m)
         
-#    print 's1', time.time() - s1t
-
     S2=sum([autocorrFFT(pos[:, i]) for i in range(pos.shape[1])])
-    
-#    print 's2', time.time()-s2t
-    
+        
     msd = S1 - 2*S2
     return time_list, msd[0:]
 
@@ -153,27 +148,27 @@ def generate_tracker(type_of_tracker):
        
     :param type_of_tracker string: OpenCV tracking algorithm 
     """
-    if type_of_tracker == tracker_types[0]:
+    if type_of_tracker == TRACKER_TYPES[0]:
         tracker = cv2.TrackerBoosting_create()
-    elif type_of_tracker == tracker_types[1]:
+    elif type_of_tracker == TRACKER_TYPES[1]:
         tracker = cv2.TrackerMIL_create()
-    elif type_of_tracker == tracker_types[2]:
+    elif type_of_tracker == TRACKER_TYPES[2]:
         tracker = cv2.TrackerKCF_create()
-    elif type_of_tracker == tracker_types[3]:
+    elif type_of_tracker == TRACKER_TYPES[3]:
         tracker = cv2.TrackerTLD_create()
-    elif type_of_tracker == tracker_types[4]:
+    elif type_of_tracker == TRACKER_TYPES[4]:
         tracker = cv2.TrackerMedianFlow_create()
-    elif type_of_tracker == tracker_types[5]:
+    elif type_of_tracker == TRACKER_TYPES[5]:
         tracker = cv2.TrackerGOTURN_create()
-    elif type_of_tracker == tracker_types[6]:
+    elif type_of_tracker == TRACKER_TYPES[6]:
         tracker = cv2.TrackerMOSSE_create()
-    elif type_of_tracker == tracker_types[7]:
+    elif type_of_tracker == TRACKER_TYPES[7]:
         tracker = cv2.TrackerCSRT_create()
     else:
         tracker = None
         print('The name of the tracker is incorrect')
         print('Here are the possible trackers:')
-        for track_type in tracker_types:
+        for track_type in TRACKER_TYPES:
             print(track_type)
     return tracker
 
@@ -182,12 +177,7 @@ def generate_tracker(type_of_tracker):
 def main():
 
     global f
-    global initialPath
-    # global displayFPS,displayTime,displayTracker,displayBox,displayTracking
-    # global displayScaleBar,displayScaleBarText,displayParticleNumber,displayVideo
-    # global generalOffset
-    # global jumpThreshold
-    
+    global initialPath    
     global bbox_aux
     
     # Generate a MultiTracker object    
@@ -218,15 +208,15 @@ def main():
     seconds = length/fps
     
     
-    #Conversion of secondsStopped to framesStopped
-    framesStopped = round(secondsStopped*fps)
+    #Conversion of SECONDS_STOPPED to framesStopped
+    framesStopped = round(SECONDS_STOPPED*fps)
     if framesStopped < 5: framesStopped = 5
     
     #Create the current and save directories, and file names
     currentDir = fileName.parents[0]
     file = fileName.stem
     saveDir = Path(currentDir,file)
-    newVideoName = file+'_TRACKING_'+tracker_type+'.avi'
+    newVideoName = file+'_TRACKING_'+TRACKER_TYPE+'.avi'
     newVideo = Path(saveDir,newVideoName)
     
     #If the file folder doesn't exist, it creates it
@@ -261,14 +251,9 @@ def main():
     cv2.namedWindow(title_window,cv2.WINDOW_AUTOSIZE )
     
     #Creates trackbar
-    trackbar_name = 'Alpha (x10)'
+    trackbar_name = '(x10)'
     cv2.createTrackbar(trackbar_name, title_window , 10, 100, on_trackbar)
-    
-    # beta = 1
-    # on_trackbar(1)
-    # beta = cv2.getTrackbarPos(trackbar_name,title_window)
-    # sys.exit()
-    
+        
     #Infinite loop stopping if the letter q is pressed
     while True:
     
@@ -290,11 +275,11 @@ def main():
     
     cv2.destroyAllWindows()
     
-    #Error handling
+    # Error handling
     if alpha < 0:
         raise Exception('Something went wrong with the contrast setting...\n Do not close the window with the "x", but pressing "q".')
     
-    #Changes are applied
+    # Changes are applied
     frameResized = cv2.convertScaleAbs(frameResized, alpha=alpha, beta=0)
     initialFrame = cv2.convertScaleAbs(initialFrame, alpha=alpha, beta=0)
     
@@ -311,7 +296,7 @@ def main():
     finalised if SPACEBAR is pressed. To finish selecting particles, ESC must be pressed.
     '''
     
-    #Bounding box for tracking initialised
+    # Bounding box for tracking initialised
     bounding_box_list = list()
     bbox_aux = list()
     
@@ -347,16 +332,16 @@ def main():
     cv2.destroyAllWindows()
     
     
-    #This part removes the instances of bounding box with 0's
-    #This happens sometimes if a double press is made by mistake
+    # This part removes the instances of bounding box with 0's
+    # This happens sometimes if a double press is made by mistake
     while True:
         try:
             bbox_aux.remove((0,0,0,0))
         except:
             break
     
-    #This part removes instances of boxes without height and width,
-    #also made by mistake
+    # This part removes instances of boxes without height and width,
+    # also made by mistake
     to_remove = list()
     for i in range(len(bbox_aux)):
         if bbox_aux[i][2] <= 1 or bbox_aux[i][3] <= 1:
@@ -364,19 +349,19 @@ def main():
     for r in to_remove:
         bbox_aux.remove(r)
         
-    #Bounding boxes are added to the list, after being resized with the f scaling factor
+    # Bounding boxes are added to the list, after being resized with the f scaling factor
     bounding_box_list.append(list([np.asarray([int(z/f) for z in bbox]) for bbox in bbox_aux]))
     
     
     print("\nTracking objects. Please wait...")
     
-    #Trackers generated
+    # Trackers generated
     for bbox in bounding_box_list[0]:
      
         # Add tracker to the multi-object tracker
-        multi_tracker.add(generate_tracker(tracker_type), initialFrame, tuple(bbox))
+        multi_tracker.add(generate_tracker(TRACKER_TYPE), initialFrame, tuple(bbox))
     
-    #ID's are generated for each particle
+    # ID's are generated for each particle
     ids = [i+1 for i in range(len(bounding_box_list[0]))]
     
     
@@ -493,13 +478,13 @@ def main():
                 distance_y = (centerList[-1][index-1][1]-centers[-1][1])**2
                 distance = np.sqrt(distance_x + distance_y)
     
-                if distance > np.mean([bbox[2],bbox[3]])*jumpThreshold:
+                if distance > np.mean([bbox[2],bbox[3]])*JUMP_THRESHOLD:
                     #if the distance is more than the average dimension
                     #times the jump threshold, the trakcing has moved to another particle
                     keepDict[index] = False
                     print('Tracking went away')
                     errorLog.append('Object {} went more than {} px away at time {} s.'.format(index,
-                                                                                               np.mean([bbox[2],bbox[3]])*jumpThreshold,
+                                                                                               np.mean([bbox[2],bbox[3]])*JUMP_THRESHOLD,
                                                                                                timeList[-1]))
                     centers[-1] = (-1,-1)
                     continue
@@ -507,7 +492,7 @@ def main():
         
             # Draw bounding box
             # only if the particle was not lost
-            if displayBox:
+            if DISPLAY_BOX:
                 if f != 1:
                     bboxScaled = tuple([b*f for b in bbox])
                     p1Scaled = (int(bboxScaled[0]), int(bboxScaled[1]))
@@ -521,7 +506,7 @@ def main():
         centerList.append(centers)        
         
         #Loop through the CURRENT PARTICLES only
-        if displayParticleNumber:
+        if DISPLAY_PARTICLE_NUMBER:
             for k in range(len(ID_array[-1])):
                 label = ID_array[-1][k]
                 bbox = bboxes[label-1]
@@ -536,7 +521,7 @@ def main():
                             cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255,255,255),2)
         
         #If we want to display the tracking with colors
-        if displayTracking:
+        if DISPLAY_TRACKING:
             centerList_T = list(zip(*centerList))
             for i, idx in enumerate(ID_array[-1]):
                 count2 = 0
@@ -552,40 +537,40 @@ def main():
             
     
         # Display tracker type on frame
-        if displayTracker:
+        if DISPLAY_TRACKER:
             if f != 1:
-                cv2.putText(frameResized, tracker_type + " Tracker", (int(f*width*0.15),int(f*height*0.05+generalOffset*f)), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50,170,50),2)
-            cv2.putText(frame, tracker_type + " Tracker", (int(width*0.15),int(height*0.05)+generalOffset), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255,255,255),2)
+                cv2.putText(frameResized, TRACKER_TYPE + " Tracker", (int(f*width*0.15),int(f*height*0.05+GENERAL_OFFSET*f)), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50,170,50),2)
+            cv2.putText(frame, TRACKER_TYPE + " Tracker", (int(width*0.15),int(height*0.05)+GENERAL_OFFSET), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255,255,255),2)
         
         # Display FPS on frame
-        if displayFPS:
+        if DISPLAY_FPS:
             if f != 1:
-                cv2.putText(frameResized, "FPS: " + str(fps), (int(f*width*0.15),int(f*height*0.05+generalOffset*f)+30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50,170,50), 2)
-            cv2.putText(frame, "FPS: " + str(fps), (int(width*0.15),int(height*0.05)+30+generalOffset), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255,255,255), 2)
+                cv2.putText(frameResized, "FPS: " + str(fps), (int(f*width*0.15),int(f*height*0.05+GENERAL_OFFSET*f)+30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50,170,50), 2)
+            cv2.putText(frame, "FPS: " + str(fps), (int(width*0.15),int(height*0.05)+30+GENERAL_OFFSET), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255,255,255), 2)
     
         # Display elapsed time
-        if displayTime:
+        if DISPLAY_TIME:
             if f != 1:
-                cv2.putText(frameResized, "Time: " + "%.2f s" % elapsed, (int(f*width*0.15),int(f*height*0.05+generalOffset*f)+60), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50,170,50), 2)     
-            cv2.putText(frame, "Time: " + "%.2f s" % elapsed, (int(width*0.15),int(height*0.05)+60+generalOffset), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255,255,255), 2)
+                cv2.putText(frameResized, "Time: " + "%.2f s" % elapsed, (int(f*width*0.15),int(f*height*0.05+GENERAL_OFFSET*f)+60), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50,170,50), 2)     
+            cv2.putText(frame, "Time: " + "%.2f s" % elapsed, (int(width*0.15),int(height*0.05)+60+GENERAL_OFFSET), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255,255,255), 2)
         
         # Display scale bar
-        if displayScaleBar:
-            p1 = (int(width*0.7),int(height*0.07)+generalOffset)
-            p2 = (int(width*0.7+scaleNumber*scale),int(height*0.075)+generalOffset)
+        if DISPLAY_SCALE_BAR:
+            p1 = (int(width*0.7),int(height*0.07)+GENERAL_OFFSET)
+            p2 = (int(width*0.7+SCALE_NUMBER*SCALE),int(height*0.075)+GENERAL_OFFSET)
             cv2.rectangle(frame, p1,p2, (255,255,255), -1)
             if f != 1:
                 p1Scaled = (int(p1[0]*f),int(p1[1]*f))
                 p2Scaled = (int(p2[0]*f),int(p2[1]*f))
                 cv2.rectangle(frameResized, p1Scaled,p2Scaled, (255,255,255), -1)
-            if displayScaleBarText:
+            if DISPLAY_SCALE_BAR_TEXT:
                 if f != 1:
-                    cv2.putText(frameResized,str(scaleNumber) + ' um',(int(f*width*0.7),int(f*height*0.06+generalOffset*f)),cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255,255,255), 2)
-                cv2.putText(frame,str(scaleNumber) + ' um',(int(width*0.72),int(height*0.06)+generalOffset),cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255,255,255), 2)
+                    cv2.putText(frameResized,str(SCALE_NUMBER) + ' um',(int(f*width*0.7),int(f*height*0.06+GENERAL_OFFSET*f)),cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255,255,255), 2)
+                cv2.putText(frame,str(SCALE_NUMBER) + ' um',(int(width*0.72),int(height*0.06)+GENERAL_OFFSET),cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255,255,255), 2)
     
         
         # Display result
-        if displayVideo:
+        if DISPLAY_VIDEO:
             if f != 1:
                 cv2.imshow("Tracking", frameResized)
             else:
@@ -634,12 +619,12 @@ def main():
         #with the correct conversion of pixel/um
         initialCenter = (int(bounding_box_list[0][p-1][0] + bounding_box_list[0][p-1][2]/2.),
                          int(bounding_box_list[0][p-1][1] + bounding_box_list[0][p-1][3]/2.))
-        initialCenterx = initialCenter[0]/scale
-        initialCentery = initialCenter[1]/scale
+        initialCenterx = initialCenter[0]/SCALE
+        initialCentery = initialCenter[1]/SCALE
         
         #All the centers in um (x, y dimensions and 2D)
-        centerx = [centerList[i][p-1][0]/scale for i in range(len(centerList)) if centerList[i][p-1] != (-1,-1)]
-        centery = [centerList[i][p-1][1]/scale for i in range(len(centerList)) if centerList[i][p-1] != (-1,-1)]
+        centerx = [centerList[i][p-1][0]/SCALE for i in range(len(centerList)) if centerList[i][p-1] != (-1,-1)]
+        centery = [centerList[i][p-1][1]/SCALE for i in range(len(centerList)) if centerList[i][p-1] != (-1,-1)]
         center = [np.sqrt((centerx[i]-initialCenterx)**2 + (centery[i]-initialCentery)**2) for i in range(len(centerx))]
                 
         
@@ -705,7 +690,7 @@ def main():
                 ff.write("%.3f\t%.f\t%.f\n" % (timeList[i],centerList[i][p-1][0],centerList[i][p-1][1]))
     
         #Write tracking position in um (including the lost particles with -1's)
-        with open(Path(saveDir, file+'_p'+str(p)+'_trackingPlot_um_norm.txt'), 'w')  as ff:
+        with open(Path(saveDir, file+'_p'+str(p)+'_tracking_um_norm.txt'), 'w')  as ff:
             ff.write('Time (s)\tX (um)\tY (um)\n')
             for i in range(len(centerx_norm)):
                 ff.write("%.3f\t%.6f\t%.6f\n" % (timeList[i],centerx_norm[i],centery_norm[i]))
