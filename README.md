@@ -1,8 +1,6 @@
 # NMTT: Nano-micromotor tracking tool
 
- Tool to track nano- and micromotors' motion from bright-field or fluorescent microscopy imaging.
-
-(More information to come)
+Tool to track nano- and micromotors' motion (or any other particles or objects) from bright-field or fluorescent microscopy imaging.
 
 
 ### Installing dependencies
@@ -97,7 +95,9 @@ Finally, a summary file *myfile*\_trackingResults.csv is created in the same fol
 
 ### Global variables
 
-There are several variables that need to be manually adjusted by the user. 
+There are several variables that need to be manually adjusted by the user in the first section of the code, "Parameter definition".
+
+The following are display options that affect only the tracking video being saved. They are flags to indicate whether certain things appear or not in the screen.
 
 Variable name             |  Explanation    | Default value
 :-------------------------:|:-------------------------: | :--------:
@@ -107,4 +107,25 @@ DISPLAY_TIME | Flag to display the time of the video on the top left corner | Tr
 DISPLAY_TRACKER | Flag to display the name of the tracker of the video on the top left corner | False
 DISPLAY_BOX | Flag to display the bounding box of the tracked object during the video | True
 DISPLAY_TRACKING | Flag to display the tracking of the object during the video with a heatmap trail. The first positions will start with a red color, which will turn to blue in time, showing the passing of time in the tracking | True
-DISPLAY_TRACKING | Flag to display the tracking of the object during the video with a heatmap trail. The first positions will start with a red color, which will turn to blue in time, showing the passing of time in the tracking | True
+DISPLAY_SCALE_BAR | Flag to display the scale bar on the top right corner (only the bar) | True
+DISPLAY_SCALE_BAR_TEXT | Flag to display the text of scale bar on the top right corner, according to the scale number provided below | True
+DISPLAY_PARTICLE_NUMBER | Flag to display the particle number next to its tracking | True
+DISPLAY_VIDEO | Flag to display the video during the tracking. Not showing the video will make the tracking significantly faster, but it's recommended to visualise it to find possible mistakes or misbehaviors. Not showing the video doesn't prevent the video to be saved | True
+GENERAL_OFFSET | Flag to display the video during the tracking. Not showing the video will make the tracking significantly faster, but it's recommended to visualise it to find possible mistakes or misbehaviors. Not showing the video doesn't prevent the video to be saved | True
+SCALE_NUMBER | The number of micrometers of the scale if DISPLAY_SCALE_BAR is activated and the number that appear is DISPLAY_SCALE_BAR_TEXT is activated. By default it's 10 micrometers but should be adjusted according to the magnification of the video to avoid too big or too small a scar bar | 10
+
+The following parameters affect the behaviour of the tracking, in particular how sensitive it should be to the particles getting lost or moving too fast. It is recommended to not change this values unless there is significant misbehaviour during tracking, e.g., the particles keep getting lost, stuck, etc., and the tracking doesn't stop recording their position.
+
+
+Variable name             |  Explanation    | Default value
+:-------------------------:|:-------------------------: | :--------:
+JUMP_THRESHOLD | The jump threshold specifies how much the particle must move from one frame to another to consider that the tracker has lost it and it has found a different particle. During tracking, the average dimension of the bounding box (the mean value of its width and height) is multiplied by the jump threshold. If it's set to 0.5, the center of the bounding box must have moved more than half its size, to consider that we've lost it. Recommended value is 0.5, but can be larger if the particles generally move very fast, or smaller if they are moving slowly| 0.5
+SECONDS_STOPPED | The number of seconds stopped specifies how much time must have passed with the tracker in the same position to consider that the particle has been lost and the tracker is stuck without moving. This threshold in seconds will be converted into consecutive frames. At least 5 frames are needed to compute reliably if the tracker is stuck, so if the number of seconds doesn't reach 5 frames, this number will be forced. If the threshold is too short, the particles will be lost too often. If it's too long, much of the trajectory will be stuck, giving unreliable results. The calculation is done as soon as the video is read and the FPS are known| 0.7
+TRACKER_TYPE | The type of tracker from the following list: BOOSTING, MIL, KCF, TLK, MEDIANFLOW, GOTURN, MOSSE and CSRT. CSRT is the tracker by default, which is a new addition to OpenCV that performs extremely well to this type of objects and is quite fast. It's very robust to the particles changing shape and size slowly, therefore performing well for non-spherical particles. Morever, the bounding box of the tracker changes its size following the object (it can become bigger or smaller). More information about the trackers can be found [here](https://learnopencv.com/object-tracking-using-opencv-cpp-python/), [here](https://www.pyimagesearch.com/2018/07/30/opencv-object-tracking/) and in the [OpenCV documentation](https://docs.opencv.org/3.4/d9/df8/group__tracking.html)| CSRT
+
+Finally, the following parameter is crucial to get reliable results:
+
+Variable name             |  Explanation    | Default value
+:-------------------------:|:-------------------------: | :--------:
+SCALE | Conversion of image pixels to micrometers in units of pixels/micrometer. The default value, 9.6 is the setting from a specific microscope, and means that each micrometer of the image is formed by 9.6 pixels. If it's not specified correctly, the results returned in micrometers will be completely wrong (however, they are also returned in pixel units) | 9.6
+
