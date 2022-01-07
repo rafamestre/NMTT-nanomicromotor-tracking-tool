@@ -4,7 +4,7 @@ Tool to track nano- and micromotors' motion (or any other particles or objects) 
 
 ## Citation and contact
 
-If you use this script for your research, please cite it as follows (adapt if necessary):
+If you use this script for your research, please cite it as follows, adapting if necessary (check lisence file):
 
 > The videos were analysed with the Nano-micromotor Tracking Tool (NMTT) v. *X*, a Python-based script that uses computer vision techniques to track the position of one or several particles in time (https://github.com/rafamestre/NMTT-nanomicromotor-tracking-tool). 
 
