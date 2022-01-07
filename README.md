@@ -2,8 +2,21 @@
 
 Tool to track nano- and micromotors' motion (or any other particles or objects) from bright-field or fluorescent microscopy imaging.
 
+## Citation and contact
 
-### Installing dependencies
+If you use this script for your research, please cite it as follows (adapt if necessary):
+
+> The videos were analysed with the Nano-micromotor Tracking Tool (NMTT) v. *X*, a Python-based script that uses computer vision techniques to track the position of one or several particles in time (https://github.com/rafamestre/NMTT-nanomicromotor-tracking-tool). 
+
+where *X* is your version. Feel free to add the GitHub address as a reference, footnote or between brackets.
+
+If you want your research to be hightlighted here as a user of this tool, please email me at r.mestre[at]soton[dot]ac[dot]uk. For issues, errors or requests for changes/collaborations, email me. 
+
+### Analysis of the results
+
+I recommend to use my Nano-micromotor analysis tool ([NMAT](https://github.com/rafamestre/NMAT-nanomicromotor-analysis-tool)), which accepts the motion results produced by NMTT and produces a whole analysis of motion with MSD, MSAD, trajectory plotting, autocorrelation velocity, and performs different types of fittings and motion parameter extraction, including averages between particles of the same conditions.
+
+## Installing dependencies
 
 It is recommended to use [Anaconda](https://www.anaconda.com/products/individual) and a specific enviorenment to run this code, to avoid clashes between packages versions. It's recommended to use Python 3.6 or higher.
 
@@ -42,7 +55,7 @@ spyder
 
 Once opened, you can drag the *.py* file into the window or open it in File\Open. Clicking F5 or the button "Run file" will launch the script.
 
-### Instructions to run
+## Instructions to run
 
 First, you'll be asked to select a video that you want to analyse. This can be a video from fluorescent or bright-field imaging. **Note**: The pop-up window to select the video file uses the package [easygui](https://pypi.org/project/easygui/). This pop-up window doesn't show in the taskbar and sometimes appears hidden behind your windows. If you run the script and nothing happens, minimse your windows one by one and you might find the browse window at the back.
 
@@ -75,7 +88,7 @@ Once you press ESC, the tracking will start:
 You don't need to do anything, the tracking will stop by itself and write all the results in file. 
 
 
-### Results
+## Results
 
 This script writes several results in file. Assuming your file was named *myfile*, the script will create a folder in the same destination called *myfile*. Inside, for each particle, it creates:
 
@@ -93,7 +106,7 @@ Each of these files (except the first two and the video) will appear for as many
 
 Finally, a summary file *myfile*\_trackingResults.csv is created in the same folder as the original video, with the time, X position and Y position (in micrometers) for each particle.
 
-### Global variables
+## Global variables
 
 There are several variables that need to be manually adjusted by the user in the first section of the code, "Parameter definition".
 
@@ -129,6 +142,3 @@ Variable name             |  Explanation    | Default value
 :-------------------------:|:-------------------------: | :--------:
 SCALE | Conversion of image pixels to micrometers in units of pixels/micrometer. The default value, 9.6 is the setting from a specific microscope, and means that each micrometer of the image is formed by 9.6 pixels. If it's not specified correctly, the results returned in micrometers will be completely wrong (however, they are also returned in pixel units) | 9.6
 
-### Analysis of the results
-
-I recommend to use my Nano- micromotor analysis tool ([NMAT](https://github.com/rafamestre/NMAT-nanomicromotor-analysis-tool)), which accepts the motion results produced by NMTT and produces a whole analysis of motion with MSD, MSAD, trajectory plotting, autocorrelation velocity, and performs different types of fittings and motion parameter extraction, including averages between particles of the same conditions.
