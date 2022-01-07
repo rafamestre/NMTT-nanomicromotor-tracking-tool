@@ -18,7 +18,7 @@ I recommend to use my Nano-micromotor analysis tool ([NMAT](https://github.com/r
 
 ## Installing dependencies
 
-It is recommended to use [Anaconda](https://www.anaconda.com/products/individual) and a specific enviorenment to run this code, to avoid clashes between packages versions. It's recommended to use Python 3.6 or higher.
+It is recommended to use [Anaconda](https://www.anaconda.com/products/individual) and a specific enviorenment to run this code, to avoid clashes between packages versions, especially with OpenCV. It's recommended to use Python 3.6 or higher.
 
 After installing Anaconda, open your Anaconda prompt and write:
 
